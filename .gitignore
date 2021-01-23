@@ -4,6 +4,7 @@
 /.cache
 /.config
 /.coverage.covimerage
+/.coverage_covimerage
 /.local
 /.viminfo
 /coverage.xml
