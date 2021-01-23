@@ -1,5 +1,7 @@
 # vim-gomodifytags
 
+![test](https://github.com/ttys3/vim-gomodifytags/workflows/test/badge.svg)
+
 this Vim plugin add [gomodifytags](https://github.com/fatih/gomodifytags) support for `go` filetype
 
 the code is split from a very powerful yet very very complex Vim plugin named [vim-go](https://github.com/fatih/vim-go)
