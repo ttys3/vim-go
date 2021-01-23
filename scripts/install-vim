@@ -66,7 +66,7 @@ cd "$srcdir"
 if [ "$1" = "nvim" ]; then
 
   # TODO: Use macOS binaries on macOS
-  curl -Ls https://github.com/neovim/neovim/releases/download/$tag/nvim-linux64.tar.gz |
+  curl -LZ https://github.com/neovim/neovim/releases/download/$tag/nvim-linux64.tar.gz |
     tar xzf - -C /tmp/vim-go-test/
   mv /tmp/vim-go-test/nvim-linux64 /tmp/vim-go-test/nvim-install
   mkdir -p "$installdir/share/nvim/runtime/pack/vim-go/start"
@@ -96,5 +96,7 @@ fi
 rm -rf "$srcdir"
 
 echo "installed to: $installdir"
+
+"$installdir/bin/vim" --version
 
 # vim:ts=2:sts=2:sw=2:et
