@@ -12,7 +12,7 @@ cd "$vimgodir"
 
 vim=${1:-}
 
-installdir="/tmp/vim-go-test/$1-install"
+installdir="/tmp/vim-gomodifytags-test/$1-install"
 
 # Make sure all Go tools and other dependencies are installed.
 echo "Installing Go binaries"
@@ -24,13 +24,13 @@ go get github.com/fatih/gomodifytags
 
 echo "Installing lint tools"
 (
-  mkdir -p "$installdir/share/vim/vimgo/pack/vim-go/start/"
-  cd "$installdir/share/vim/vimgo/pack/vim-go/start/"
+  mkdir -p "$installdir/share/vim/vimgo/pack/vim-gomodifytags/start/"
+  cd "$installdir/share/vim/vimgo/pack/vim-gomodifytags/start/"
   [ -d "vim-vimhelplint" ] || git clone --depth 1 --quiet https://github.com/machakann/vim-vimhelplint
   [ -d "vim-vimlparser" ]  || git clone --depth 1 --quiet https://github.com/ynkdir/vim-vimlparser
   [ -d "vim-vimlint" ]     || git clone --depth 1 --quiet https://github.com/syngan/vim-vimlint
 )
 
-echo "vim-go tools installed to: $installdir/share/vim/vimgo/pack/vim-go/start"
+echo "vim-gomodifytags tools installed to: $installdir/share/vim/vimgo/pack/vim-gomodifytags/start"
 
 # vim:ts=2:sts=2:sw=2:et

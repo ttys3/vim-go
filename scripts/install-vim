@@ -45,8 +45,8 @@ case "$vim" in
     ;;
 esac
 
-srcdir="/tmp/vim-go-test/$1-src"
-installdir="/tmp/vim-go-test/$1-install"
+srcdir="/tmp/vim-gomodifytags-test/$1-src"
+installdir="/tmp/vim-gomodifytags-test/$1-install"
 
 # Use cached installdir.
 if [ -d "$installdir" ]; then
@@ -67,15 +67,15 @@ if [ "$1" = "nvim" ]; then
 
   # TODO: Use macOS binaries on macOS
   curl -LZ https://github.com/neovim/neovim/releases/download/$tag/nvim-linux64.tar.gz |
-    tar xzf - -C /tmp/vim-go-test/
-  mv /tmp/vim-go-test/nvim-linux64 /tmp/vim-go-test/nvim-install
-  mkdir -p "$installdir/share/nvim/runtime/pack/vim-go/start"
-  ln -s "$vimgodir" "$installdir/share/nvim/runtime/pack/vim-go/start/vim-go"
+    tar xzf - -C /tmp/vim-gomodifytags-test/
+  mv /tmp/vim-gomodifytags-test/nvim-linux64 /tmp/vim-gomodifytags-test/nvim-install
+  mkdir -p "$installdir/share/nvim/runtime/pack/vim-gomodifytags/start"
+  ln -s "$vimgodir" "$installdir/share/nvim/runtime/pack/vim-gomodifytags/start/vim-gomodifytags"
 
   # Consistent paths makes calling things easier.
   mv "$installdir/bin/nvim" "$installdir/bin/vim"
   mkdir -p "$installdir/share/vim/vimgo/pack"
-  ln -s "$installdir/share/nvim/runtime/pack/vim-go" "$installdir/share/vim/vimgo/pack/vim-go"
+  ln -s "$installdir/share/nvim/runtime/pack/vim-gomodifytags" "$installdir/share/vim/vimgo/pack/vim-gomodifytags"
 
 # Build Vim from source.
 else
@@ -88,8 +88,8 @@ else
 
   ./configure --prefix="$installdir" --with-features=huge --disable-gui
   make install
-  mkdir -p "$installdir/share/vim/vimgo/pack/vim-go/start"
-  ln -s "$vimgodir" "$installdir/share/vim/vimgo/pack/vim-go/start/vim-go"
+  mkdir -p "$installdir/share/vim/vimgo/pack/vim-gomodifytags/start"
+  ln -s "$vimgodir" "$installdir/share/vim/vimgo/pack/vim-gomodifytags/start/vim-gomodifytags"
 fi
 
 # Don't really need source after successful install.

@@ -16,7 +16,7 @@ if [ -z "${1:-}" ]; then
 fi
 
 vim=$1
-vimdir="/tmp/vim-go-test/$vim-install"
+vimdir="/tmp/vim-gomodifytags-test/$vim-install"
 export GOPATH=$vimdir
 export PATH=${GOPATH}/bin:$PATH
 
@@ -47,9 +47,9 @@ fi
 ### Run vim-vimlint
 ###################
 printf "Running vim-vimlint ... "
-lint=$(sh "$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimlint/bin/vimlint.sh" \
-  -p "$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimlparser" \
-  -l "$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimlint" \
+lint=$(sh "$vimdir/share/vim/vimgo/pack/vim-gomodifytags/start/vim-vimlint/bin/vimlint.sh" \
+  -p "$vimdir/share/vim/vimgo/pack/vim-gomodifytags/start/vim-vimlparser" \
+  -l "$vimdir/share/vim/vimgo/pack/vim-gomodifytags/start/vim-vimlint" \
   -u \
   -c func_abort=1 \
   -e EVL110=1 -e EVL103=1 -e EVL104=1 -e EVL102=1 \
@@ -71,10 +71,10 @@ printf "Running vimhelplint ... "
    echo "SKIPPED"
 # set modeline explicitly so that the modeline will be respected when run as root.
 # lint=$($vimdir/bin/vim -esNR \
-#   --cmd "set rtp+=$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimhelplint/" \
+#   --cmd "set rtp+=$vimdir/share/vim/vimgo/pack/vim-gomodifytags/start/vim-vimhelplint/" \
 #   --cmd 'set modeline' \
 #   +'filetype plugin on' \
-#   +"e $vimgodir/doc/vim-go.txt" \
+#   +"e $vimgodir/doc/vim-gomodifytags.txt" \
 #   +'verbose VimhelpLintEcho' \
 #   +q \
 #   2>&1 ||:)

@@ -30,7 +30,7 @@ function! s:logmessages() abort
 endfunction
 
 function! s:clearOptions() abort
-  " clear all the vim-go options
+  " clear all the vim-gomodifytags options
   for l:k in keys(g:)
     if l:k =~ '^go_' && l:k !~ '^go_loaded_'
       call execute(printf('unlet g:%s', l:k))
@@ -46,7 +46,7 @@ let s:testfile = expand('%:t')
 let s:dir = expand('%:p:h')
 call go#util#Chdir(s:dir)
 
-" Export root path to vim-go dir.
+" Export root path to vim-gomodifytags dir.
 let g:vim_go_root = fnamemodify(getcwd(), ':p')
 
 " Get a list of all Test_ functions for the given file.
@@ -120,14 +120,14 @@ endfor
 
 " Create an empty fail to indicate that at least one test failed.
 if s:fail > 0
-  split /tmp/vim-go-test/FAILED
+  split /tmp/vim-gomodifytags-test/FAILED
   silent write
 endif
 
 let s:total_elapsed_time = substitute(reltimestr(reltime(s:total_started)), '^\s*\(.\{-}\)\s*$', '\1', '')
 
 " Also store all internal messages from s:logs as well.
-silent! split /tmp/vim-go-test/test.tmp
+silent! split /tmp/vim-gomodifytags-test/test.tmp
 call append(line('$'), s:logs)
 call append(line('$'), printf("%s %s %s %ss / %s tests",
       \ (s:fail > 0 ? 'FAIL' : 'ok  '),

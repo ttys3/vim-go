@@ -379,7 +379,7 @@ function! s:echo(msg, hi)
 
   exe 'echohl ' . a:hi
   for line in l:msg
-    echom "vim-go: " . line
+    echom "vim-gomodifytags: " . line
   endfor
   echohl None
 endfunction
@@ -430,7 +430,7 @@ endfunction
 " Make a named temporary directory which starts with "prefix".
 "
 " Unfortunately Vim's tempname() is not portable enough across various systems;
-" see: https://github.com/mattn/vim-go/pull/3#discussion_r138084911
+" see: https://github.com/mattn/vim-gomodifytags/pull/3#discussion_r138084911
 function! go#util#tempdir(prefix) abort
   " See :help tempfile
   if go#util#IsWin()
@@ -494,7 +494,7 @@ function! go#util#ShowInfo(info)
     return
   endif
 
-  echo "vim-go: " | echohl Function | echon a:info | echohl None
+  echo "vim-gomodifytags: " | echohl Function | echon a:info | echohl None
 endfunction
 
 function! go#util#ClearHighlights(group) abort

@@ -12,7 +12,7 @@ set cpo&vim
 " The full path to the created directory is returned, it is the caller's
 " responsibility to clean that up!
 fun! gotest#write_file(path, contents) abort
-  let l:dir = go#util#tempdir("vim-go-test/testrun/")
+  let l:dir = go#util#tempdir("vim-gomodifytags-test/testrun/")
   let $GOPATH .= ':' . l:dir
   let l:full_path = l:dir . '/src/' . a:path
 
@@ -45,7 +45,7 @@ endfun
 " The file will be copied to a new GOPATH-compliant temporary directory and
 " loaded as the current buffer.
 fun! gotest#load_fixture(path) abort
-  let l:dir = go#util#tempdir("vim-go-test/testrun/")
+  let l:dir = go#util#tempdir("vim-gomodifytags-test/testrun/")
   let $GOPATH .= ':' . l:dir
   let l:full_path = l:dir . '/src/' . a:path
 
