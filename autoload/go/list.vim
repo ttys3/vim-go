@@ -106,7 +106,7 @@ function! go#list#JumpToFirst(listtype) abort
   endif
 endfunction
 
-" Clean cleans and closes the location list 
+" Clean cleans and closes the location list
 function! go#list#Clean(listtype) abort
   if a:listtype == "locationlist"
     lex []
@@ -129,58 +129,6 @@ function! go#list#Close(listtype) abort
   else
     cclose
   endif
-endfunction
-
-function! s:listtype(listtype) abort
-  let listtype = go#config#ListType()
-  if empty(listtype)
-    return a:listtype
-  endif
-
-  return listtype
-endfunction
-
-" s:default_list_type_commands is the defaults that will be used for each of
-" the supported commands (see documentation for g:go_list_type_commands). When
-" defining a default, quickfix should be used if the command operates on
-" multiple files, while locationlist should be used if the command operates on a
-" single file or buffer. Keys that begin with an underscore are not supported
-" in g:go_list_type_commands.
-let s:default_list_type_commands = {
-      \ "GoBuild":              "quickfix",
-      \ "GoDiagnostics":        "quickfix",
-      \ "GoDebug":              "quickfix",
-      \ "GoErrCheck":           "quickfix",
-      \ "GoFmt":                "locationlist",
-      \ "GoGenerate":           "quickfix",
-      \ "GoInstall":            "quickfix",
-      \ "GoLint":               "quickfix",
-      \ "GoMetaLinter":         "quickfix",
-      \ "GoMetaLinterAutoSave": "locationlist",
-      \ "GoModFmt":             "locationlist",
-      \ "GoModifyTags":         "locationlist",
-      \ "GoRename":             "quickfix",
-      \ "GoRun":                "quickfix",
-      \ "GoTest":               "quickfix",
-      \ "GoVet":                "quickfix",
-      \ "GoReferrers":          "locationlist",
-      \ "GoImplements":         "locationlist",
-      \ "GoCallers":            "locationlist",
-      \ "_guru":                "locationlist",
-      \ "_term":                "locationlist",
-      \ "_job":                 "locationlist",
-  \ }
-
-function! go#list#Type(for) abort
-  let l:listtype = s:listtype(get(s:default_list_type_commands, a:for))
-  if l:listtype == "0"
-    call go#util#EchoError(printf(
-          \ "unknown list type command value found ('%s'). Please open a bug report in the vim-gomodifytags repo.",
-          \ a:for))
-    let l:listtype = "quickfix"
-  endif
-
-  return get(go#config#ListTypeCommands(), a:for, l:listtype)
 endfunction
 
 " restore Vi compatibility settings

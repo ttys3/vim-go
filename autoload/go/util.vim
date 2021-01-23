@@ -2,22 +2,6 @@
 let s:cpo_save = &cpo
 set cpo&vim
 
-" PathSep returns the appropriate OS specific path separator.
-function! go#util#PathSep() abort
-  if go#util#IsWin()
-    return '\'
-  endif
-  return '/'
-endfunction
-
-" PathListSep returns the appropriate OS specific path list separator.
-function! go#util#PathListSep() abort
-  if go#util#IsWin()
-    return ";"
-  endif
-  return ":"
-endfunction
-
 " LineEnding returns the correct line ending, based on the current fileformat
 function! go#util#LineEnding() abort
   if &fileformat == 'dos'
@@ -27,12 +11,6 @@ function! go#util#LineEnding() abort
   endif
 
   return "\n"
-endfunction
-
-" Join joins any number of path elements into a single path, adding a
-" Separator if necessary and returns the result
-function! go#util#Join(...) abort
-  return join(a:000, go#util#PathSep())
 endfunction
 
 " IsWin returns 1 if current OS is Windows or 0 otherwise
@@ -100,46 +78,6 @@ function! go#util#gomodcache() abort
   return substitute(s:exec(['go', 'env', 'GOMODCACHE'])[0], '\n', '', 'g')
 endfunction
 
-" hostosarch returns the OS and ARCH values that the go binary is intended for.
-function! go#util#hostosarch() abort
-  let [l:hostos, l:err] = s:exec(['go', 'env', 'GOHOSTOS'])
-  let [l:hostarch, l:err] = s:exec(['go', 'env', 'GOHOSTARCH'])
-  return [substitute(l:hostos, '\n', '', 'g'), substitute(l:hostarch, '\n', '', 'g')]
-endfunction
-
-" go#util#ModuleRoot returns the root directory of the module of the current
-" buffer. An optional argument is can be provided to check an arbitrary
-" directory.
-function! go#util#ModuleRoot(...) abort
-  let l:wd = ''
-  if a:0 > 0
-    let l:wd = go#util#Chdir(a:1)
-  endif
-  try
-    let [l:out, l:err] = go#util#ExecInDir(['go', 'env', 'GOMOD'])
-    if l:err != 0
-      return -1
-    endif
-  finally
-    if l:wd != ''
-      call go#util#Chdir(l:wd)
-    endif
-  endtry
-
-  let l:module = split(l:out, '\n', 1)[0]
-
-  " When run with `GO111MODULE=on and not in a module directory, the module will be reported as /dev/null.
-  let l:fakeModule = '/dev/null'
-  if go#util#IsWin()
-    let l:fakeModule = 'NUL'
-  endif
-
-  if l:fakeModule == l:module
-    return expand('%:p:h')
-  endif
-
-  return resolve(fnamemodify(l:module, ':p:h'))
-endfunction
 
 " Run a shell command.
 "
@@ -232,17 +170,6 @@ endfunction
 
 function! go#util#ShellError() abort
   return v:shell_error
-endfunction
-
-" StripPath strips the path's last character if it's a path separator.
-" example: '/foo/bar/'  -> '/foo/bar'
-function! go#util#StripPathSep(path) abort
-  let last_char = strlen(a:path) - 1
-  if a:path[last_char] == go#util#PathSep()
-    return strpart(a:path, 0, last_char)
-  endif
-
-  return a:path
 endfunction
 
 " StripTrailingSlash strips the trailing slash from the given path list.
@@ -415,18 +342,6 @@ function! go#util#GetLines()
   return buf
 endfunction
 
-" Convert the current buffer to the "archive" format of
-" golang.org/x/tools/go/buildutil:
-" https://godoc.org/golang.org/x/tools/go/buildutil#ParseOverlayArchive
-"
-" > The archive consists of a series of files. Each file consists of a name, a
-" > decimal file size and the file contents, separated by newlinews. No newline
-" > follows after the file contents.
-function! go#util#archive()
-    let l:buffer = join(go#util#GetLines(), "\n")
-    return expand("%:p:gs!\\!/!") . "\n" . strlen(l:buffer) . "\n" . l:buffer
-endfunction
-
 " Make a named temporary directory which starts with "prefix".
 "
 " Unfortunately Vim's tempname() is not portable enough across various systems;
@@ -489,122 +404,7 @@ function! go#util#ParseErrors(lines) abort
   return errors
 endfunction
 
-function! go#util#ShowInfo(info)
-  if empty(a:info)
-    return
-  endif
-
-  echo "vim-gomodifytags: " | echohl Function | echon a:info | echohl None
-endfunction
-
-function! go#util#ClearHighlights(group) abort
-  if has('textprop')
-    " the property type may not exist when syntax highlighting is not enabled.
-    if empty(prop_type_get(a:group))
-      return
-    endif
-    if !has('patch-8.1.1035')
-      return prop_remove({'type': a:group, 'all': 1}, 1, line('$'))
-    endif
-    return prop_remove({'type': a:group, 'all': 1})
-  endif
-
-  if exists("*matchaddpos")
-    return s:clear_group_from_matches(a:group)
-  endif
-endfunction
-
-function! s:clear_group_from_matches(group) abort
-  let l:cleared = 0
-
-  let m = getmatches()
-  for item in m
-    if item['group'] == a:group
-      call matchdelete(item['id'])
-      let l:cleared = 1
-    endif
-  endfor
-
-  return l:cleared
-endfunction
-
 function! s:noop(...) abort dict
-endfunction
-
-" go#util#HighlightPositions highlights using text properties if possible and
-" falls back to matchaddpos() if necessary. It works around matchaddpos()'s
-" limit of only 8 positions per call by calling matchaddpos() with no more
-" than 8 positions per call.
-"
-" pos should be a list of 3 element lists. The lists should be [line, col,
-" length] as used by matchaddpos().
-function! go#util#HighlightPositions(group, pos) abort
-  if has('textprop')
-    for l:pos in a:pos
-      " use a single line prop by default
-      let l:prop = {'type': a:group, 'length': l:pos[2]}
-
-      let l:line = getline(l:pos[0])
-
-      " l:max is the 1-based index within the buffer of the first character after l:pos.
-      let l:max = line2byte(l:pos[0]) + l:pos[1] + l:pos[2] - 1
-      if has('patch-8.2.115')
-        " Use byte2line as long as 8.2.115 (which resolved
-        " https://github.com/vim/vim/issues/5334) is available.
-        let l:end_lnum = byte2line(l:max)
-
-        " specify end line and column if needed.
-        if l:pos[0] != l:end_lnum
-          let l:end_col = l:max - line2byte(l:end_lnum)
-          let l:prop = {'type': a:group, 'end_lnum': l:end_lnum, 'end_col': l:end_col}
-        endif
-      elseif l:pos[1] + l:pos[2] - 1 > len(l:line)
-        let l:end_lnum = l:pos[0]
-        while line2byte(l:end_lnum+1) < l:max
-          let l:end_lnum += 1
-        endwhile
-
-        " l:end_col is the full length - the byte position of l:end_lnum +
-        " the number of newlines (number of newlines is l:end_lnum -
-        " l:pos[0].
-        let l:end_col = l:max - line2byte(l:end_lnum) + l:end_lnum - l:pos[0]
-        let l:prop = {'type': a:group, 'end_lnum': l:end_lnum, 'end_col': l:end_col}
-      endif
-      try
-        call prop_add(l:pos[0], l:pos[1], l:prop)
-      catch
-        " Swallow any exceptions encountered while trying to add the property
-        " Due to the asynchronous nature, it's possible that the buffer has
-        " changed since the buffer was analyzed and that the specified
-        " position is no longer valid.
-      endtry
-    endfor
-    return
-  endif
-
-  if exists('*matchaddpos')
-    return s:matchaddpos(a:group, a:pos)
-  endif
-endfunction
-
-" s:matchaddpos works around matchaddpos()'s limit of only 8 positions per
-" call by calling matchaddpos() with no more than 8 positions per call.
-function! s:matchaddpos(group, pos) abort
-  let l:partitions = []
-  let l:partitionsIdx = 0
-  let l:posIdx = 0
-  for l:pos in a:pos
-    if l:posIdx % 8 == 0
-      let l:partitions = add(l:partitions, [])
-      let l:partitionsIdx = len(l:partitions) - 1
-    endif
-    let l:partitions[l:partitionsIdx] = add(l:partitions[l:partitionsIdx], l:pos)
-    let l:posIdx = l:posIdx + 1
-  endfor
-
-  for l:positions in l:partitions
-    call matchaddpos(a:group, l:positions)
-  endfor
 endfunction
 
 function! go#util#Chdir(dir) abort

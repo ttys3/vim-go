@@ -11,7 +11,7 @@ function! go#config#ListTypeCommands() abort
 endfunction
 
 function! go#config#ListType() abort
-  return get(g:, 'go_list_type', '')
+  return get(g:, 'go_list_type', 'locationlist')
 endfunction
 
 function! go#config#ListAutoclose() abort
