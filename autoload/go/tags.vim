@@ -113,7 +113,7 @@ func s:create_cmd(args) abort
     return {'err': "requires 'json_decode'. Update your Vim/Neovim version."}
   endif
 
-  let bin_path = go#path#CheckBinPath('gomodifytags')
+  let bin_path = 'gomodifytags'
   if empty(bin_path)
     return {'err': "gomodifytags does not exist"}
   endif

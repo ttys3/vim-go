@@ -65,31 +65,6 @@ function! go#util#has_job(...) abort
   return has('job') || has('nvim')
 endfunction
 
-let s:env_cache = {}
-
-" env returns the go environment variable for the given key. Where key can be
-" GOARCH, GOOS, GOROOT, etc... It caches the result and returns the cached
-" version.
-function! go#util#env(key) abort
-  let l:key = tolower(a:key)
-  if has_key(s:env_cache, l:key)
-    return s:env_cache[l:key]
-  endif
-
-  if executable('go')
-    let l:var = call('go#util#'.l:key, [])
-    if go#util#ShellError() != 0
-      call go#util#EchoError(printf("'go env %s' failed", toupper(l:key)))
-      return ''
-    endif
-  else
-    let l:var = eval("$".toupper(a:key))
-  endif
-
-  let s:env_cache[l:key] = l:var
-  return l:var
-endfunction
-
 " goarch returns 'go env GOARCH'. This is an internal function and shouldn't
 " be used. Instead use 'go#util#env("goarch")'
 function! go#util#goarch() abort
@@ -215,9 +190,6 @@ function! go#util#Exec(cmd, ...) abort
 
   let l:bin = a:cmd[0]
 
-  " Lookup the full path, respecting settings such as 'go_bin_path'. On errors,
-  " CheckBinPath will show a warning for us.
-  let l:bin = go#path#CheckBinPath(l:bin)
   if empty(l:bin)
     return ['', 1]
   endif
@@ -253,9 +225,6 @@ endfunction
 function! s:exec(cmd, ...) abort
   let l:bin = a:cmd[0]
   let l:cmd = go#util#Shelljoin([l:bin] + a:cmd[1:])
-  if go#util#HasDebug('shell-commands')
-    call go#util#EchoInfo('shell command: ' . l:cmd)
-  endif
 
   let l:out = call('s:system', [l:cmd] + a:000)
   return [l:out, go#util#ShellError()]
@@ -490,35 +459,6 @@ function! go#util#tempdir(prefix) abort
   return l:tmp
 endfunction
 
-" Report if the user enabled a debug flag in g:go_debug.
-function! go#util#HasDebug(flag)
-  return index(go#config#Debug(), a:flag) >= 0
-endfunction
-
-function! go#util#OpenBrowser(url) abort
-    let l:cmd = go#config#PlayBrowserCommand()
-    if len(l:cmd) == 0
-        redraw
-        echohl WarningMsg
-        echo "It seems that you don't have general web browser. Open URL below."
-        echohl None
-        echo a:url
-        return
-    endif
-
-    " if setting starts with a !.
-    if l:cmd =~ '^!'
-        let l:cmd = substitute(l:cmd, '%URL%', '\=escape(shellescape(a:url), "#")', 'g')
-        silent! exec l:cmd
-    elseif cmd =~ '^:[A-Z]'
-        let l:cmd = substitute(l:cmd, '%URL%', '\=escape(a:url,"#")', 'g')
-        exec l:cmd
-    else
-        let l:cmd = substitute(l:cmd, '%URL%', '\=shellescape(a:url)', 'g')
-        call go#util#System(l:cmd)
-    endif
-endfunction
-
 function! go#util#ParseErrors(lines) abort
   let errors = []
 
@@ -557,33 +497,6 @@ function! go#util#ShowInfo(info)
   echo "vim-go: " | echohl Function | echon a:info | echohl None
 endfunction
 
-" go#util#SetEnv takes the name of an environment variable and what its value
-" should be and returns a function that will restore it to its original value.
-function! go#util#SetEnv(name, value) abort
-  let l:state = {}
-
-  if len(a:name) == 0
-    return function('s:noop', [], l:state)
-  endif
-
-  let l:remove = 0
-  if exists('$' . a:name)
-    let l:oldvalue = eval('$' . a:name)
-  else
-    let l:remove = 1
-  endif
-
-  " wrap the value in single quotes so that it will work on windows when there
-  " are backslashes present in the value (e.g. $PATH).
-  call execute('let $' . a:name . " = '" . a:value . "'")
-
-  if l:remove
-    return function('s:unset', [a:name], l:state)
-  endif
-
-  return function('go#util#SetEnv', [a:name, l:oldvalue], l:state)
-endfunction
-
 function! go#util#ClearHighlights(group) abort
   if has('textprop')
     " the property type may not exist when syntax highlighting is not enabled.
@@ -613,23 +526,6 @@ function! s:clear_group_from_matches(group) abort
   endfor
 
   return l:cleared
-endfunction
-
-function! s:unset(name) abort
-  try
-    " unlet $VAR was introducted in Vim 8.0.1832, which is newer than the
-    " minimal version that vim-go supports. Set the environment variable to
-    " the empty string in that case. It's not perfect, but it will work fine
-    " for most things, and is really the best alternative that's available.
-    if !has('patch-8.0.1832')
-      call go#util#SetEnv(a:name, '')
-      return
-    endif
-
-    call execute('unlet $' . a:name)
-  catch
-    call go#util#EchoError(printf('could not unset $%s: %s', a:name, v:exception))
-  endtry
 endfunction
 
 function! s:noop(...) abort dict
