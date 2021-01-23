@@ -158,7 +158,7 @@ I can also disable gopls with nvim lsp easily
 
 [gomodifytags](https://github.com/fatih/gomodifytags) by [Fatih Arslan](https://github.com/fatih)
 
-[vim-go](https://github.com/fatih/vim-go)  by [Fatih Arslan](https://github.com/fatih)
+[vim-go](https://github.com/fatih/vim-go)  by [Billie Cleek](https://github.com/bhcleek) and  [Fatih Arslan](https://github.com/fatih)
 
 ## Links
 
