@@ -4,7 +4,7 @@
 
 this Vim plugin add [gomodifytags](https://github.com/fatih/gomodifytags) support for `go` filetype
 
-the code is split from a very powerful yet very very complex Vim plugin named [vim-go](https://github.com/fatih/vim-go)
+the code was split from a very powerful yet very very complex Vim plugin named [vim-go](https://github.com/fatih/vim-go)
 
 ## available commands
 
@@ -43,12 +43,12 @@ there are lots of debug plugins, like
 
 " vimspector - A multi-language debugging system for Vim
 " https://github.com/puremourning/vimspector
-Plug 'puremourning/vimspector'
+" Plug 'puremourning/vimspector'
 
 " dap https://microsoft.github.io/debug-adapter-protocol/implementors/tools/
 " https://github.com/mfussenegger/nvim-dap
-Plug 'mfussenegger/nvim-dap'
-Plug 'theHamsta/nvim-dap-virtual-text'
+" Plug 'mfussenegger/nvim-dap'
+" Plug 'theHamsta/nvim-dap-virtual-text'
 ```
 
 > Completion and many other features support via `gopls`.
