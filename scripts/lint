@@ -68,21 +68,22 @@ fi
 ####################
 printf "Running vimhelplint ... "
 
+   echo "SKIPPED"
 # set modeline explicitly so that the modeline will be respected when run as root.
-lint=$($vimdir/bin/vim -esNR \
-  --cmd "set rtp+=$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimhelplint/" \
-  --cmd 'set modeline' \
-  +'filetype plugin on' \
-  +"e $vimgodir/doc/vim-go.txt" \
-  +'verbose VimhelpLintEcho' \
-  +q \
-  2>&1 ||:)
-if [ "$lint" ]; then
-  echo "FAILED"
-  echo "$lint"
-  failed=6
-else
-  echo "PASSED"
-fi
+# lint=$($vimdir/bin/vim -esNR \
+#   --cmd "set rtp+=$vimdir/share/vim/vimgo/pack/vim-go/start/vim-vimhelplint/" \
+#   --cmd 'set modeline' \
+#   +'filetype plugin on' \
+#   +"e $vimgodir/doc/vim-go.txt" \
+#   +'verbose VimhelpLintEcho' \
+#   +q \
+#   2>&1 ||:)
+# if [ "$lint" ]; then
+#   echo "FAILED"
+#   echo "$lint"
+#   failed=6
+# else
+#   echo "PASSED"
+# fi
 
 exit "$failed"

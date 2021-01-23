@@ -81,7 +81,6 @@ for s:test in sort(s:tests)
   try
     exe 'call ' . s:test
     " sleep to give events a chance to be processed. This is especially
-    " important for the LSP code to have a chance to run before Vim exits,  in
     " order to avoid errors trying to write to the gopls channels since Vim
     " would otherwise stop gopls before the event handlers were run and result
     " in 'stream closed' errors when the events were run _after_ gopls exited.
@@ -98,13 +97,6 @@ for s:test in sort(s:tests)
   let $GOPATH = s:gopath
   " Restore the working directory after each test.
   call go#util#Chdir(s:dir)
-
-  try
-    " exit gopls after each test
-    call go#lsp#Exit()
-  catch /^Vim(call):E900: Invalid channel id/
-    " do nothing - gopls has stopped
-  endtry
 
   let s:done += 1
 

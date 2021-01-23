@@ -24,8 +24,6 @@ func! Test_SetBuildTags() abort
     let l:expected = [0, 5, 1, 0]
     call assert_notequal(l:expected, l:jumpstart)
 
-    call go#def#Jump('', 0)
-
     let l:start = reltime()
     while getpos('.') != l:expected && reltimefloat(reltime(l:start)) < 10
       sleep 100m
@@ -60,8 +58,6 @@ func! Test_SetBuildTags() abort
     let l:expectedfilename = printf('%s/constrainedfoo.go', l:dir)
     let l:expected = [0, 6, 1, 0]
     call assert_notequal(l:expected, l:jumpstart)
-
-    call go#def#Jump('', 0)
 
     let l:start = reltime()
     while getpos('.') != l:expected && reltimefloat(reltime(l:start)) < 10

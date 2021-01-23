@@ -23,7 +23,6 @@ endfunction
 "     Defaults to 0.
 "   'statustype':
 "     The status type to use when updating the status.
-"     See statusline.vim.
 "   'for':
 "     The g:go_list_type_command key to use to get the error list type to use.
 "     Errors will not be handled when the value is '_'.
@@ -145,7 +144,6 @@ function! go#job#Options(args)
       let status.state .= printf(" (%ss)", elapsed_time)
     endif
 
-    call go#statusline#Update(self.jobdir, status)
   endfunction
 
   if has_key(a:args, 'complete')
@@ -253,7 +251,6 @@ function! s:start(args) dict
           \ 'state': "started",
           \ }
 
-    call go#statusline#Update(self.jobdir, status)
   endif
   let self.started_at = reltime()
 endfunction

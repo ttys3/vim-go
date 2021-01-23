@@ -48,7 +48,6 @@ function! go#cmd#Build(bang, ...) abort
           \ 'type': 'build',
           \ 'state': "started",
           \ }
-    call go#statusline#Update(expand('%:p:h'), l:status)
 
     let default_makeprg = &makeprg
     let &makeprg = "go " . join(go#util#Shelllist(args), ' ')
@@ -80,7 +79,6 @@ function! go#cmd#Build(bang, ...) abort
         call go#util#EchoSuccess("[build] SUCCESS")
       endif
     endif
-    call go#statusline#Update(expand('%:p:h'), l:status)
   endif
 
 endfunction
@@ -112,129 +110,6 @@ function! go#cmd#BuildTags(bang, ...) abort
   endif
 endfunction
 
-
-" Run runs the current file (and their dependencies if any) in a new terminal.
-function! go#cmd#RunTerm(bang, mode, files) abort
-  let cmd = ["go", "run"]
-  if len(go#config#BuildTags()) > 0
-    call extend(cmd, ["-tags", go#config#BuildTags()])
-  endif
-
-  if empty(a:files)
-    call extend(cmd, go#tool#Files())
-  else
-    call extend(cmd, map(copy(a:files), funcref('s:expandRunArgs')))
-  endif
-  call go#term#newmode(a:bang, cmd, s:runerrorformat(), a:mode)
-endfunction
-
-" Run runs the current file (and their dependencies if any) and outputs it.
-" This is intended to test small programs and play with them. It's not
-" suitable for long running apps, because vim is blocking by default and
-" calling long running apps will block the whole UI.
-function! go#cmd#Run(bang, ...) abort
-  if go#config#TermEnabled()
-    call go#cmd#RunTerm(a:bang, '', a:000)
-    return
-  endif
-
-  if go#util#has_job()
-    " NOTE(arslan): 'term': 'open' case is not implement for +jobs. This means
-    " executions waiting for stdin will not work. That's why we don't do
-    " anything. Once this is implemented we're going to make :GoRun async
-  endif
-
-  let l:status = {
-        \ 'desc': 'current status',
-        \ 'type': 'run',
-        \ 'state': "started",
-        \ }
-
-  call go#statusline#Update(expand('%:p:h'), l:status)
-
-  let l:cmd = ['go', 'run']
-  let l:tags = go#config#BuildTags()
-  if len(l:tags) > 0
-    let l:cmd = l:cmd + ['-tags', l:tags]
-  endif
-
-  if a:0 == 0
-    let l:files = go#tool#Files()
-  else
-    let l:files = map(copy(a:000), funcref('s:expandRunArgs'))
-  endif
-
-  let l:cmd = l:cmd + l:files
-
-  if go#util#IsWin()
-    if go#util#HasDebug('shell-commands')
-      call go#util#EchoInfo(printf('shell command: %s', string(l:cmd)))
-    endif
-    try
-      let l:dir = go#util#Chdir(expand("%:p:h"))
-      exec printf('!%s', go#util#Shelljoin(l:cmd, 1))
-    finally
-      call go#util#Chdir(l:dir)
-    endtry
-
-    let l:status.state = 'success'
-    if v:shell_error
-      let l:status.state = 'failed'
-      if go#config#EchoCommandInfo()
-        redraws!
-        call go#util#EchoError('[run] FAILED')
-      endif
-    else
-      if go#config#EchoCommandInfo()
-        redraws!
-        call go#util#EchoSuccess('[run] SUCCESS')
-      endif
-    endif
-
-    call go#statusline#Update(expand('%:p:h'), l:status)
-    return
-  endif
-
-  " :make expands '%' and '#' wildcards, so they must also be escaped
-  let l:default_makeprg = &makeprg
-  let &makeprg = go#util#Shelljoin(l:cmd, 1)
-
-  let l:listtype = go#list#Type("GoRun")
-
-  let l:status.state = 'success'
-
-  let l:dir = go#util#Chdir(expand("%:p:h"))
-  try
-    " backup user's errorformat, will be restored once we are finished
-    let l:old_errorformat = &errorformat
-    let &errorformat = s:runerrorformat()
-
-    if go#util#HasDebug('shell-commands')
-      call go#util#EchoInfo('shell command: ' . l:cmd)
-    endif
-
-    if l:listtype == "locationlist"
-      exe 'lmake!'
-    else
-      exe 'make!'
-    endif
-  finally
-    call go#util#Chdir(l:dir)
-    let &errorformat = l:old_errorformat
-    let &makeprg = l:default_makeprg
-  endtry
-
-  let l:errors = go#list#Get(l:listtype)
-
-  call go#list#Window(l:listtype, len(l:errors))
-  if !empty(l:errors)
-    let l:status.state = 'failed'
-    if !a:bang
-      call go#list#JumpToFirst(l:listtype)
-    endif
-  endif
-  call go#statusline#Update(expand('%:p:h'), l:status)
-endfunction
 
 " Install installs the package by simple calling 'go install'. If any argument
 " is given(which are passed directly to 'go install') it tries to install
@@ -303,7 +178,6 @@ function! go#cmd#Generate(bang, ...) abort
         \ 'type': 'generate',
         \ 'state': "started",
         \ }
-  call go#statusline#Update(expand('%:p:h'), l:status)
 
   if go#config#EchoCommandInfo()
     call go#util#EchoProgress('generating ...')
@@ -336,7 +210,6 @@ function! go#cmd#Generate(bang, ...) abort
       call go#util#EchoSuccess('[generate] SUCCESS')
     endif
   endif
-  call go#statusline#Update(expand(':%:p:h'), l:status)
 endfunction
 
 function! s:runerrorformat()

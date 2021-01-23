@@ -33,11 +33,6 @@ function! go#test#Test(bang, compile, ...) abort
     call add(args, printf("-timeout=%s", timeout))
   endif
 
-  if go#config#TermEnabled()
-    call go#term#new(a:bang, ["go"] + args, s:errorformat())
-    return
-  endif
-
   if go#util#has_job()
     " use vim's job functionality to call it asynchronously
     let job_options  = {

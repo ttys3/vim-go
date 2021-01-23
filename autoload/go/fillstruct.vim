@@ -4,11 +4,6 @@ set cpo&vim
 
 function! go#fillstruct#FillStruct() abort
   let l:mode = go#config#FillStructMode()
-  if l:mode is 'gopls'
-    call go#lsp#FillStruct()
-    return
-  endif
-
   let l:cmd = ['fillstruct',
       \ '-file', bufname(''),
       \ '-offset', go#util#OffsetCursor(),

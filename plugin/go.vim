@@ -47,7 +47,7 @@ let s:packages = {
       \ 'godef':         ['github.com/rogpeppe/godef@master'],
       \ 'goimports':     ['golang.org/x/tools/cmd/goimports@master'],
       \ 'golint':        ['golang.org/x/lint/golint@master'],
-      \ 'gopls':         ['golang.org/x/tools/gopls@latest', {}, {'after': function('go#lsp#Restart', [])}],
+      \ 'gopls':         ['golang.org/x/tools/gopls@latest'],
       \ 'golangci-lint': ['github.com/golangci/golangci-lint/cmd/golangci-lint@master'],
       \ 'staticcheck':   ['honnef.co/go/tools/cmd/staticcheck@latest'],
       \ 'gomodifytags':  ['github.com/fatih/gomodifytags@master'],
@@ -86,16 +86,6 @@ function! s:GoInstallBinaries(updateBinaries, ...)
   endif
 
   let go_bin_path = go#path#BinPath()
-
-  let [l:goos, l:goarch] = go#util#hostosarch()
-  let Restore_goos = go#util#SetEnv('GOOS', l:goos)
-  let Restore_goarch = go#util#SetEnv('GOARCH', l:goarch)
-
-  " change $GOBIN so go get can automatically install to it
-  let Restore_gobin = go#util#SetEnv('GOBIN', go_bin_path)
-
-  " vim's executable path is looking in PATH so add our go_bin path to it
-  let Restore_path = go#util#SetEnv('PATH', go_bin_path . go#util#PathListSep() . $PATH)
 
   " when shellslash is set on MS-* systems, shellescape puts single quotes
   " around the output string. cmd on Windows does not handle single quotes
@@ -215,12 +205,6 @@ function! s:GoInstallBinaries(updateBinaries, ...)
     endif
   endfor
 
-  " restore back!
-  call call(Restore_path, [])
-  call call(Restore_gobin, [])
-  call call(Restore_goarch, [])
-  call call(Restore_goos, [])
-
   if resetshellslash
     set shellslash
   endif
@@ -248,56 +232,8 @@ function! s:CheckBinaries()
   endif
 endfunction
 
-" Autocommands
-" ============================================================================
-"
-
-" We take care to preserve the user's fileencodings and fileformats,
-" because those settings are global (not buffer local), yet we want
-" to override them for loading Go files, which are defined to be UTF-8.
-let s:current_fileformats = ''
-let s:current_fileencodings = ''
-
-" define fileencodings to open as utf-8 encoding even if it's ascii.
-function! s:gofiletype_pre()
-  let s:current_fileformats = &g:fileformats
-  let s:current_fileencodings = &g:fileencodings
-  set fileencodings=utf-8 fileformats=unix
-endfunction
-
-" restore fileencodings as others
-function! s:gofiletype_post()
-  let &g:fileformats = s:current_fileformats
-  let &g:fileencodings = s:current_fileencodings
-endfunction
-
-function! s:register()
-  if !(&modifiable && expand('<amatch>') ==# 'go')
-    return
-  endif
-
-  call go#lsp#DidOpen(expand('<afile>:p'))
-endfunction
-
 function! s:noop(...) abort
 endfunction
-
-augroup vim-go
-  autocmd!
-
-  autocmd BufNewFile *.go if &modifiable | setlocal fileencoding=utf-8 fileformat=unix | endif
-  autocmd BufNewFile *.go call go#auto#template_autocreate()
-  autocmd BufRead *.go call s:gofiletype_pre()
-  autocmd BufReadPost *.go call s:gofiletype_post()
-
-  autocmd BufNewFile *.s if &modifiable | setlocal fileencoding=utf-8 fileformat=unix | endif
-  autocmd BufRead *.s call s:gofiletype_pre()
-  autocmd BufReadPost *.s call s:gofiletype_post()
-
-  if go#util#has_job()
-    autocmd FileType * call s:register()
-  endif
-augroup end
 
 " restore Vi compatibility settings
 let &cpo = s:cpo_save
