@@ -2,6 +2,10 @@
 let s:cpo_save = &cpo
 set cpo&vim
 
+function! go#config#BinPath() abort
+  return get(g:, 'go_gomodifytags_bin', "gomodifytags")
+endfunction
+
 function! go#config#ListTypeCommands() abort
   return get(g:, 'go_list_type_commands', {})
 endfunction
