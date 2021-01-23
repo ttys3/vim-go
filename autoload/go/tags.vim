@@ -96,13 +96,7 @@ func s:write_out(out) abort
   endfor
 
   if has_key(result, 'errors')
-    let l:winnr = winnr()
-    let l:listtype = go#config#ListType()
-    call go#list#ParseFormat(l:listtype, "%f:%l:%c:%m", result['errors'], "gomodifytags", 0)
-    call go#list#Window(l:listtype, len(result['errors']))
-
-    "prevent jumping to quickfix list
-    exe l:winnr . "wincmd w"
+    call go#util#EchoError(result['errors'])
   endif
 endfunc
 
